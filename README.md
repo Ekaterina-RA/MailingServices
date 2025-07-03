@@ -13,5 +13,5 @@
 11. В проекте настроено кеширование
 
 ##Установка:
-1. Клонируйте репозиторий git@github.com:Ekaterina-RA/Mailing_web.git
+1. Клонируйте репозиторий git@github.com:Ekaterina-RA/MailingServices.git
 2. Установите зависимости pip install
