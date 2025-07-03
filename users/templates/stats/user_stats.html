@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Статистика пользователя</h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Общая статистика</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">Всего рассылок: {{ stats.total_mailings }}</li>
+                        <li class="list-group-item">Активных рассылок: {{ stats.active_mailings }}</li>
+                        <li class="list-group-item">Уникальных клиентов: {{ stats.unique_clients }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4>Последние рассылки</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Тема</th>
+                        <th>Статус</th>
+                        <th>Дата создания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mailing in mailings %}
+                    <tr>
+                        <td>{{ mailing.subject }}</td>
+                        <td>{{ mailing.get_status_display }}</td>
+                        <td>{{ mailing.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

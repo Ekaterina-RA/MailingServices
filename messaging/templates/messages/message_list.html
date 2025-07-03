@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Список сообщений</title>
+</head>
+<body>
+    <h1>Сообщения</h1>
+    <a href="{% url 'messaging:message_create' %}">Создать сообщение</a>
+
+    {% for message in messages %}
+        <div style="border: 1px solid #ccc; padding:10px; margin-bottom:10px;">
+            <h2>{{ message.subject }}</h2>
+            <p>{{ message.body }}</p>
+
+            <a href="{% url 'messaging:message_update' message.pk %}">Редактировать</a> |
+            <a href="{% url 'messaging:message_delete' message.pk %}">Удалить</a> |
+        </div>
+    {% endfor %}
+
+    {% if is_paginated %}
+        <!-- Пагинация -->
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Предыдущие сообщения</a>
+        {% endif %}
+        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Следующие сообщения</a>
+        {% endif %}
+    {% endif %}
+
+</body>
+</html>
