@@ -1,19 +1,25 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+
 from users.models import User
 
 
 class RegisterForm(UserCreationForm):
-    email = forms.EmailField(required=True)
+    email = forms.EmailField(label='Email')
+    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Подтверждение пароля', widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2"]
+        fields = ('email', 'password1', 'password2')
 
 
-class CustomPasswordResetForm(PasswordResetForm):
-    email = forms.EmailField(
-        label="Email",
-        max_length=254,
-        widget=forms.EmailInput(attrs={"autocomplete": "email"}),
-    )
+class LoginForm(AuthenticationForm):
+    username = forms.EmailField(label='Email')
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('email', 'avatar', 'phone', 'country')

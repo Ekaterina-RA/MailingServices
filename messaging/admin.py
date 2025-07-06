@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Client, Message, Mailing, MailingAttempt
+from .models import Client, Message, Mailing, Attempt
 
 
 @admin.register(Client)
@@ -25,13 +25,12 @@ class MailingAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'start_time',
-        'end_time',
         'status',
         'message_subject',
         'clients_count'
     )
     search_fields = ('status', 'message__subject')
-    list_filter = ('status', 'start_time', 'end_time')
+    list_filter = ('status', 'start_time')
     filter_horizontal = ('clients',)
 
     def message_subject(self, obj):
@@ -45,7 +44,7 @@ class MailingAdmin(admin.ModelAdmin):
     clients_count.short_description = 'Кол-во получателей'
 
 
-@admin.register(MailingAttempt)
+@admin.register(Attempt)
 class MailingAttemptAdmin(admin.ModelAdmin):
     list_display = (
         'id',

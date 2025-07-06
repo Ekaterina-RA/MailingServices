@@ -150,9 +150,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 AUTH_USER_MODEL = 'users.User'
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
-LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'messaging:mailing_list'
+LOGOUT_REDIRECT_URL = 'messaging:mailing_list'
+LOGIN_URL = 'users:login'
 
 CACHE_ENABLED = True
 if CACHE_ENABLED:
