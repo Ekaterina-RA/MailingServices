@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from messaging.models import Mailing, Attempt
+from messaging.models import Mailing
 from messaging.tasks import send_mailing
 
 
@@ -9,15 +9,30 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         now = timezone.now()
-        messages = Mailing.objects.filter(
+
+        mailings = Mailing.objects.filter(
             start_time__lte=now,
-            end_time__gte=now,
-            status=Mailing.CREATED
+            status=Mailing.CREATED,
+            is_active=True
+        ).exclude(
+            end_time__lt=now
         )
 
-        for message in messages:
-            message.status = Mailing.STARTED
-            messages.save()
-            send_mailing.delay(message.id)
+        count = 0
 
-        self.stdout.write(self.style.SUCCESS(f'Successfully started {messages.count()} messages'))
+        for mailing in mailings:
+            try:
+                mailing.status = Mailing.STARTED
+                mailing.save()
+                send_mailing.delay(mailing.id)
+                count += 1
+
+                self.stdout.write(f'Started mailing ID {mailing.id}')
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(
+                    f'Error starting mailing ID {mailing.id}: {str(e)}'
+                ))
+
+        self.stdout.write(self.style.SUCCESS(
+            f'Successfully started {count} mailings'
+        ))

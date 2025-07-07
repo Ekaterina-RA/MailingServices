@@ -18,19 +18,20 @@ class ClientForm(forms.ModelForm):
             'comment': forms.Textarea(attrs={'rows': 3}),
         }
 
+
 class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
-        fields = ['start_time', 'frequency', 'status', 'message', 'clients']
+        fields = ['start_time', 'end_time', 'frequency', 'clients', 'message', 'status', 'is_active']
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'clients': forms.CheckboxSelectMultiple(),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
         if user:
-            # Ограничение по владельцу (если нужно)
-            self.fields['message'].queryset = Message.objects.filter(owner=user)
             self.fields['clients'].queryset = Client.objects.filter(owner=user)
+            self.fields['message'].queryset = Message.objects.filter(owner=user)

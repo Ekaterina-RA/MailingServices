@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from messaging.forms import ClientForm, MessageForm, MailingForm
@@ -9,6 +10,7 @@ from messaging.models import Client, Message, Mailing, Attempt
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'messaging/client_list.html'
+    context_object_name = 'clients'
 
     def get_queryset(self):
         return Client.objects.filter(owner=self.request.user)
@@ -69,11 +71,17 @@ class MessageUpdateView(OwnerRequiredMixin, UpdateView):
     template_name = 'messaging/message_form.html'
     success_url = reverse_lazy('messaging:message_list')
 
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
+
 
 class MessageDeleteView(OwnerRequiredMixin, DeleteView):
     model = Message
     template_name = 'messaging/message_confirm_delete.html'
     success_url = reverse_lazy('messaging:message_list')
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
 
 class MessageDetailView(LoginRequiredMixin, DetailView):
@@ -99,14 +107,28 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     template_name = 'messaging/mailing_form.html'
     success_url = reverse_lazy('messaging:mailing_list')
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
-
     def form_valid(self, form):
         form.instance.owner = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        print(f"Created mailing with ID: {self.object.id}")
+        return response
+
+    def form_invalid(self, form):
+        print("Form errors:", form.errors)
+        return super().form_invalid(form)
+
+    def create_mailing(request):
+        if request.method == 'POST':
+            form = MailingForm(request.POST, user=request.user)
+            if form.is_valid():
+                mailing = form.save(commit=False)
+                mailing.owner = request.user
+                mailing.save()
+                form.save_m2m()  # Важно для ManyToMany!
+                return redirect('mailing_list')
+        else:
+            form = MailingForm(user=request.user)
+        return render(request, 'messaging/mailing_form.html', {'form': form})
 
 
 class MailingUpdateView(LoginRequiredMixin, UpdateView):
