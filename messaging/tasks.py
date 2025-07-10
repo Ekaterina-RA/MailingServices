@@ -2,6 +2,7 @@ from celery import shared_task
 from .models import Mailing
 from django.core.mail import send_mail
 
+
 @shared_task
 def send_mailing_async(mailing_id):
     try:
@@ -15,9 +16,9 @@ def send_mailing_async(mailing_id):
 
     def send_message(email, text):
         send_mail(
-            subject='Новое сообщение',
+            subject="Новое сообщение",
             message=text,
-            from_email='ekaterina.kuz@gmail.com',
+            from_email="ekaterina.kuz@gmail.com",
             recipient_list=[email],
             fail_silently=False,
         )
@@ -30,4 +31,3 @@ def send_mailing_async(mailing_id):
 
     mailing.status = Mailing.Status.COMPLETED
     mailing.save()
-

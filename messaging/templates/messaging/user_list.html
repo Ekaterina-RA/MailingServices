@@ -1,0 +1,22 @@
+<td>{{ user.get_full_name }}</td>
+<td>{{ user.date_joined|date:"d.m.Y H:i" }}</td>
+<td>
+    {% if user.is_active %}
+        <span class="badge bg-success">Активен</span>
+    {% else %}
+        <span class="badge bg-danger">Заблокирован</span>
+    {% endif %}
+</td>
+<td>
+    <a href="{% url 'messaging:user_mailings' user.id %}" class="btn btn-sm btn-info">
+        Рассылки
+    </a>
+    {% if perms.auth.can_block_user %}
+        <form method="post" action="{% url 'messaging:toggle_user_status' user.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm {% if user.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                {% if user.is_active %}Блокировать{% else %}Разблокировать{% endif %}
+            </button>
+        </form>
+    {% endif %}
+</td>

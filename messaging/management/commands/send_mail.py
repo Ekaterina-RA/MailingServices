@@ -5,18 +5,14 @@ from messaging.tasks import send_mailing
 
 
 class Command(BaseCommand):
-    help = 'Send scheduled messages'
+    help = "Send scheduled messages"
 
     def handle(self, *args, **options):
         now = timezone.now()
 
         mailings = Mailing.objects.filter(
-            start_time__lte=now,
-            status=Mailing.CREATED,
-            is_active=True
-        ).exclude(
-            end_time__lt=now
-        )
+            start_time__lte=now, status=Mailing.CREATED, is_active=True
+        ).exclude(end_time__lt=now)
 
         count = 0
 
@@ -27,12 +23,12 @@ class Command(BaseCommand):
                 send_mailing.delay(mailing.id)
                 count += 1
 
-                self.stdout.write(f'Started mailing ID {mailing.id}')
+                self.stdout.write(f"Started mailing ID {mailing.id}")
             except Exception as e:
-                self.stdout.write(self.style.ERROR(
-                    f'Error starting mailing ID {mailing.id}: {str(e)}'
-                ))
+                self.stdout.write(
+                    self.style.ERROR(
+                        f"Error starting mailing ID {mailing.id}: {str(e)}"
+                    )
+                )
 
-        self.stdout.write(self.style.SUCCESS(
-            f'Successfully started {count} mailings'
-        ))
+        self.stdout.write(self.style.SUCCESS(f"Successfully started {count} mailings"))

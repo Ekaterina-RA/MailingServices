@@ -1,10 +1,18 @@
 {% extends 'base.html' %}
-
+{% block content %}
 {% block title %}Рассылки{% endblock %}
 
-{% block content %}
+
     <h1>Рассылки</h1>
-    <a href="{% url 'messaging:mailing_create' %}" class="btn btn-primary mb-3">Создать рассылку</a>
+    <div class="mb-3">
+        <a href="{% url 'messaging:mailing_create' %}" class="btn btn-primary me-2">Создать рассылку</a>
+        {% if perms.auth.view_user %}
+            <a href="{% url 'messaging:user_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-users me-1"></i> Список пользователей
+            </a>
+        {% endif %}
+    </div>
+    <div class="row">
 
     <div class="row">
         <div class="col-md-4">
@@ -39,8 +47,12 @@
                             <td>{{ mailing.clients.count }}</td>
                             <td>
                                 <a href="{% url 'messaging:mailing_detail' mailing.pk %}" class="btn btn-sm btn-info">Просмотр</a>
-                                <a href="{% url 'messaging:mailing_edit' mailing.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                                <a href="{% url 'messaging:mailing_update' mailing.pk %}" class="btn btn-sm btn-warning">Изменить</a>
                                 <a href="{% url 'messaging:mailing_delete' mailing.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                                <form method="post" action="{% url 'messaging:mailing_send' mailing.pk %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success">Отправить</button>
+                                </form>
                             </td>
                         </tr>
                     {% empty %}
