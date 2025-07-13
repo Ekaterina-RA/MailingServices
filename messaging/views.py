@@ -1,9 +1,5 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import (
-    LoginRequiredMixin,
-    PermissionRequiredMixin,
-    UserPassesTestMixin,
-)
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
@@ -13,15 +9,18 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
     DetailView,
+    RedirectView, TemplateView,
 )
 from messaging.forms import ClientForm, MessageForm, MailingForm
 from messaging.mixins import OwnerRequiredMixin
 from messaging.models import Client, Message, Mailing, Attempt
 from django.contrib import messages
-
 from users.models import User
 
 
+class MessagingHomeView(TemplateView):
+    template_name = 'messaging/home.html'
+    context_object_name = "home"
 
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
@@ -111,9 +110,14 @@ class MessageDetailView(LoginRequiredMixin, DetailView):
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = "messaging/mailing_list.html"
+    context_object_name = "mailings"
 
     def get_queryset(self):
         return Mailing.objects.filter(owner=self.request.user)
+
+
+def mailing_list(request):
+    return render(request, 'messaging/mailing_list.html')
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
@@ -168,6 +172,7 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
 class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
     template_name = "messaging/mailing_detail.html"
+    context_object_name = "mailing"
 
     def get_queryset(self):
         return Mailing.objects.filter(owner=self.request.user)
@@ -178,10 +183,16 @@ class MailingSendView(LoginRequiredMixin, View):
         mailing = get_object_or_404(Mailing, pk=pk, owner=request.user)
         try:
             sent_count = mailing.send()
+            Attempt.objects.create(
+                mailing=mailing, status="SUCCESS", server_response="Успешно"
+            )
             messages.success(
                 request, f"Рассылка успешно отправлена {sent_count} клиентам!"
             )
         except Exception as e:
+            Attempt.objects.create(
+                mailing=mailing, status="FAILURE", server_response={str(e)}
+            )
             messages.error(request, f"Ошибка при отправке рассылки: {str(e)}")
         return redirect("messaging:mailing_list")
 
@@ -205,15 +216,49 @@ class UserMailingsView(PermissionRequiredMixin, ListView):
 
 
 class UserListView(PermissionRequiredMixin, ListView):
-    permission_required = "auth.view_user"
+    permission_required = "users.view_user"
     template_name = "messaging/user_list.html"
     context_object_name = "users"
     queryset = User.objects.all().select_related("profile").order_by("-date_joined")
 
 
+def block_user(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    user.is_active = False
+    user.save()
+    return redirect("messaging:users_list")
+
+
+def disable_mailing(request, mailing_id):
+    mailing = get_object_or_404(Mailing, pk=mailing_id)
+    mailing.is_active = False  # отключить рассылку (флаг)
+    mailing.status = Mailing.FAILED  # или другой статус по вашему выбору
+    mailing.save()
+    return redirect("messaging:mailings_list")
+
+
 class AttemptListView(LoginRequiredMixin, ListView):
     model = Attempt
     template_name = "attempts/attempt_list.html"
+    context_object_name = "attempts"
 
     def get_queryset(self):
         return Attempt.objects.filter(mailing__owner=self.request.user)
+
+
+@login_required
+@permission_required("messaging.change_mailing")
+def disable_mailing(request, mailing_id):
+    mailing = get_object_or_404(Mailing, pk=mailing_id)
+    mailing.is_active = False
+    mailing.status = Mailing.COMPLETED
+    mailing.save()
+    return redirect("messaging:mailing_list")
+
+
+class DisableMailingView(View):
+    def get(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk)
+        mailing.is_active = False
+        mailing.save()
+        return redirect('messaging:mailing_list')

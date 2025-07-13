@@ -5,8 +5,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>История попыток рассылок</h2>
         {% if mailing_id %}
-        <a href="{% url 'messaging:mailing_list' pk=mailing_id %}" class="btn btn-outline-secondary">
-            Назад к рассылке
+        <a href="{% url 'messaging:mailing_detail' pk=attempt.mailing.pk %}" class="btn btn-outline-primary">
+            Перейти к рассылке
         </a>
         {% endif %}
     </div>
@@ -20,7 +20,6 @@
                         <th>Рассылка</th>
                         <th>Статус</th>
                         <th>Ответ сервера</th>
-                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,12 +27,12 @@
                     <tr>
                         <td>{{ attempt.attempt_time|date:"d.m.Y H:i" }}</td>
                         <td>
-                            <a href="{% url 'messaging:mailing_list' pk=attempt.mailing.pk %}">
+                            <a href="{% url 'messaging:mailing_detail' pk=attempt.mailing.pk %}">
                                 {{ attempt.mailing.name|truncatechars:30 }}
                             </a>
                         </td>
                         <td>
-                            <span class="badge 
+                            <span class="badge
                                 {% if attempt.status == 'success' %}bg-success
                                 {% elif attempt.status == 'failure' %}bg-danger
                                 {% else %}bg-warning{% endif %}">
@@ -41,12 +40,6 @@
                             </span>
                         </td>
                         <td>{{ attempt.server_response|truncatechars:50 }}</td>
-                        <td>
-                            <a href="{% url 'messaging:attempt_detail' pk=attempt.pk %}"
-                               class="btn btn-sm btn-outline-primary">
-                                Подробнее
-                            </a>
-                        </td>
                     </tr>
                     {% empty %}
                     <tr>

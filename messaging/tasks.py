@@ -8,7 +8,6 @@ def send_mailing_async(mailing_id):
     try:
         mailing = Mailing.objects.get(id=mailing_id)
     except Mailing.DoesNotExist:
-        # Можно залогировать ошибку или просто выйти
         return
 
     messages = mailing.messages.all()

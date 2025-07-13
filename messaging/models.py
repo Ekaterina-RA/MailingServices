@@ -71,10 +71,10 @@ class Mailing(models.Model):
         verbose_name="Время окончания рассылки", null=True, blank=True
     )
     frequency = models.CharField(
-        max_length=10, default="weekly", verbose_name="Периодичность"
+        max_length=100, default="weekly", verbose_name="Периодичность"
     )
     status = models.CharField(
-        max_length=10, choices=STATUS_CHOICES, default=CREATED, verbose_name="Статус"
+        max_length=100, choices=STATUS_CHOICES, default=CREATED, verbose_name="Статус"
     )
     clients = models.ManyToManyField(Client, verbose_name="Клиенты")
     message = models.ForeignKey(

@@ -23,6 +23,13 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи"
         permissions = [
             ("can_block_user", "Can block user"),
+            ("can_view_client", "CCan viewc lient"),
+            ("can_disable_mailing", "Can disable mailing"),
+            ("can_view_mailing", "Can view mailing"),
+            ("can_disable_message", "Can disable message"),
+            ("can_view_message", "Can view message"),
+            ("can_view_all", "Can view all items"),
+            ("is_manager", "Has manager privileges"),
         ]
 
     def __str__(self):

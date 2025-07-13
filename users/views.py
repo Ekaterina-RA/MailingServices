@@ -17,6 +17,7 @@ from users.forms import RegisterForm, LoginForm, ProfileForm
 from users.models import User, Profile
 from django.views.generic import ListView
 
+
 class RegisterView(CreateView):
     model = User
     form_class = RegisterForm
@@ -86,7 +87,7 @@ class ToggleUserStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     def test_func(self):
         # Проверяем права на блокировку пользователей
-        return self.request.user.has_perm('auth.can_block_user')
+        return self.request.user.has_perm("users.can_block_user")
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -96,4 +97,4 @@ class ToggleUserStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
         action = "разблокирован" if user.is_active else "заблокирован"
         messages.success(request, f"Пользователь {user.email} успешно {action}")
 
-        return redirect('messaging:user_list')
+        return redirect("messaging:user_list")

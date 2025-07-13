@@ -1,17 +1,18 @@
-from django.db.models.signals import post_migrate
-from django.dispatch import receiver
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission, Group, User
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
 
-from messaging.models import Client
+# Create manager group
+manager_group, created = Group.objects.get_or_create(name="Managers")
 
+# Get permissions
+content_type = ContentType.objects.get_for_model(User)
+view_all = Permission.objects.get(codename="can_view_all")
+is_manager = Permission.objects.get(codename="is_manager")
 
-@receiver(post_migrate)
-def create_manager_group(sender, **kwargs):
-    group, created = Group.objects.get_or_create(name=settings.MANAGER_GROUP_NAME)
-    if created:
-        content_type = ContentType.objects.get_for_model(Client)
-        permissions = Permission.objects.filter(content_type=content_type)
-        group.permissions.set(permissions)
-        group.save()
+# Add permissions to group
+manager_group.permissions.add(view_all, is_manager)
+
+# Assign user to group
+user = User.objects.get(email="manager@example.com")
+user.groups.add(manager_group)
+user.save()

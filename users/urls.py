@@ -1,5 +1,6 @@
 from django.urls import path
 
+from messaging import admin
 from messaging.views import UserMailingsView
 from users.apps import UsersConfig
 from users.views import (

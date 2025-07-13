@@ -12,6 +12,10 @@
                class="btn btn-outline-primary ms-2">
                 К рассылке
             </a>
+            <a href="{% url 'messaging:mailing_detail' pk=attempt.mailing.pk %}"
+               class="btn btn-outline-info ms-2">
+                Подробнее о рассылке
+            </a>
         </div>
     </div>
 
@@ -59,7 +63,6 @@
             </div>
         </div>
     </div>
-
     <div class="card mt-4">
         <div class="card-header">
             <h5>Техническая информация</h5>
