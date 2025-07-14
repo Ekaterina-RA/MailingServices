@@ -7,12 +7,13 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordResetCompleteView,
 )
+from django.core.checks import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, UpdateView
 
-from messaging.models import Mailing
+
 from users.forms import RegisterForm, LoginForm, ProfileForm
 from users.models import User, Profile
 from django.views.generic import ListView

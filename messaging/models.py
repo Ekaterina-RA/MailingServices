@@ -89,10 +89,9 @@ class Mailing(models.Model):
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
         permissions = [
-            ("can_view_mailing", "Can view mailing"),
-            ("can_disable_mailing", "Can disable mailing"),
-            ("can_view_all_mailings", "Can view all mailings"),
-            ("can_view_user_stats", "Can view users statistics"),
+            ("can_block_user", "Can block users"),
+            ("can_view_all", "Can view all mailings"),
+            ("can_finish_mailing", "Can finish any mailing"),
         ]
 
     def send(self):

@@ -1,7 +1,4 @@
 from django.urls import path
-
-from messaging import admin
-from messaging.views import UserMailingsView
 from users.apps import UsersConfig
 from users.views import (
     RegisterView,
@@ -37,5 +34,4 @@ urlpatterns = [
         CustomPasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
-    path("mailings/", UserMailingsView.as_view(), name="user_mailings"),
 ]

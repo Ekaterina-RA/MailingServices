@@ -1,5 +1,9 @@
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
@@ -9,7 +13,8 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
     DetailView,
-    RedirectView, TemplateView,
+    RedirectView,
+    TemplateView,
 )
 from messaging.forms import ClientForm, MessageForm, MailingForm
 from messaging.mixins import OwnerRequiredMixin
@@ -19,8 +24,9 @@ from users.models import User
 
 
 class MessagingHomeView(TemplateView):
-    template_name = 'messaging/home.html'
+    template_name = "messaging/home.html"
     context_object_name = "home"
+
 
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
@@ -113,11 +119,30 @@ class MailingListView(LoginRequiredMixin, ListView):
     context_object_name = "mailings"
 
     def get_queryset(self):
+        if self.request.user.has_perm("users.can_view_all"):
+            return Mailing.objects.all()
         return Mailing.objects.filter(owner=self.request.user)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["can_finish"] = self.request.user.has_perm(
+            "messaging.can_finish_mailing"
+        )
+        return context
 
-def mailing_list(request):
-    return render(request, 'messaging/mailing_list.html')
+
+class FinishMailingView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Контроллер для завершения рассылки"""
+
+    def test_func(self):
+        return self.request.user.has_perm("messaging.can_finish_mailing")
+
+    def post(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk)
+        mailing.status = "completed"
+        mailing.save()
+        messages.success(request, f"Рассылка {mailing.id} завершена")
+        return redirect("messaging:mailing_list")
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
@@ -215,26 +240,34 @@ class UserMailingsView(PermissionRequiredMixin, ListView):
         return context
 
 
-class UserListView(PermissionRequiredMixin, ListView):
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     permission_required = "users.view_user"
+    model = User
     template_name = "messaging/user_list.html"
     context_object_name = "users"
-    queryset = User.objects.all().select_related("profile").order_by("-date_joined")
+
+    def test_func(self):
+        return self.request.user.has_perm("users.can_view_all")
+
+    def get_queryset(self):
+        return User.objects.all()
 
 
-def block_user(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    user.is_active = False
-    user.save()
-    return redirect("messaging:users_list")
+class ToggleUserStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Контроллер для блокировки/разблокировки пользователей"""
 
+    def test_func(self):
+        return self.request.user.has_perm("users.can_block_user")
 
-def disable_mailing(request, mailing_id):
-    mailing = get_object_or_404(Mailing, pk=mailing_id)
-    mailing.is_active = False  # отключить рассылку (флаг)
-    mailing.status = Mailing.FAILED  # или другой статус по вашему выбору
-    mailing.save()
-    return redirect("messaging:mailings_list")
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.is_blocked = not user.is_blocked
+        user.save()
+
+        action = "разблокирован" if not user.is_blocked else "заблокирован"
+        messages.success(request, f"Пользователь {user.email} успешно {action}")
+
+        return redirect("messaging:user_list")
 
 
 class AttemptListView(LoginRequiredMixin, ListView):
@@ -261,4 +294,4 @@ class DisableMailingView(View):
         mailing = get_object_or_404(Mailing, pk=pk)
         mailing.is_active = False
         mailing.save()
-        return redirect('messaging:mailing_list')
+        return redirect("messaging:mailing_list")

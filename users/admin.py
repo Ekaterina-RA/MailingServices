@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Profile
+from django.contrib.auth.models import Group
+
+
+admin.site.unregister(Group)
 
 
 class ManagerAccessMixin:
@@ -24,3 +26,6 @@ class ManagerAccessMixin:
         if request.user.has_perm("users.is_manager"):
             return qs
         return qs.filter(pk=request.user.pk)
+
+
+admin.site.register(Group)

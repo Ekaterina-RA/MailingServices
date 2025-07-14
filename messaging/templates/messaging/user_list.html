@@ -1,50 +1,37 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8" />
-<title>Пользователи сервиса</title>
+{% extends 'base.html' %}
 
-<style>
-body { font-family: Arial, sans-serif; margin:20px;}
-h1 { color:#333;}
-table { width:100%; border-collapse:collapse;}
-th, td { padding:10px;border:1px solid #ccc;text-align:left;}
-th { background-color:#f4f4f4;}
-a.button {
-    display:inline-block;
-    padding:6px 12px;
-    margin-top:-5px;
-    background-color:#d9534f;
-    color:#fff;
-    text-decoration:none;
-    border-radius:4px;
-}
-a.button:hover {
-    background-color:#c9302c;
-}
-</style>
+{% block content %}
+<h1>Список пользователей</h1>
 
-<h1>Пользователи сервиса</h1>
-
-{% if users %}
-<table style="width:auto;">
-<thead style="background-color:#f4f4f4;">
-<tr><th>ID</th><th>Имя пользователя</th><th>Email</th><th>Status (активен)</th><th>Действия</th></tr></thead><tbody>
-
-{% for user in users %}
-<tr style="border-bottom:1px solid #ccc;">
-<td>{{ user.id }}</td>
-<td>{{ user.username }}</td><!-- или full_name если есть -->
-<td>{{ user.email }}</td><!-- или другое поле -->
-<td>{{ user.is_active|yesno:"Да,Нет" }}</td>
-
-<!-- Кнопка блокировки, если активен -->
-{% if user.is_active %}
-<td><a class="button" href="{% url 'manager:block_user' user.id %}">Заблокировать</a></td></tr></tbody></table>{% else %}
-<td colspan="5">Заблокирован(а)</td></tr></tbody></table>{% endif %}
-
-{% endfor %}
-
-{% else %}
-<p>Нет пользователей для отображения.</p}
-{% endif %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.email }}</td>
+            <td>
+                {% if user.is_blocked %}
+                <span class="badge bg-danger">Заблокирован</span>
+                {% else %}
+                <span class="badge bg-success">Активен</span>
+                {% endif %}
+            </td>
+            <td>
+                <form action="{% url 'messaging:toggle_user' user.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if user.is_blocked %}btn-success{% else %}btn-danger{% endif %}">
+                        {% if user.is_blocked %}Разблокировать{% else %}Заблокировать{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
