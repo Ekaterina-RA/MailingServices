@@ -30,6 +30,10 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'messaging:attempt_list' %}">Попытки</a>
                         </li>
+                    {% if perms.users.can_block_user %}
+                    li class="nav-item">
+                            <a class="nav-link" href="{% url 'messaging:user_list' %}">Пользователи</a>
+                    {% endif %}
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">

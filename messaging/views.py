@@ -34,6 +34,8 @@ class ClientListView(LoginRequiredMixin, ListView):
     context_object_name = "clients"
 
     def get_queryset(self):
+        if self.request.user.has_perm("users.can_view_all"):
+            return Client.objects.all()
         return Client.objects.filter(owner=self.request.user)
 
 
@@ -150,6 +152,11 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     form_class = MailingForm
     template_name = "messaging/mailing_form.html"
     success_url = reverse_lazy("messaging:mailing_list")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         form.instance.owner = self.request.user

@@ -44,20 +44,27 @@
                     <div class="btn-group" role="group">
                         <a href="{% url 'messaging:mailing_detail' mailing.pk %}"
                            class="btn btn-sm btn-info" title="Просмотр">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas fa-eye">Просмотр</i>
                         </a>
                         {% if mailing.owner == request.user or perms.messaging.change_mailing %}
                         <a href="{% url 'messaging:mailing_update' mailing.pk %}"
                            class="btn btn-sm btn-primary" title="Редактировать">
-                            <i class="fas fa-edit"></i>
+                            <i class="fas fa-edit">Редактировать</i>
                         </a>
+                        <form method="post" action="{% url 'messaging:mailing_send' mailing.pk %}"
+                              {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-warning" title="Отправить">
+                                <i class="fas fa-edit">Отправить</i>
+                            </button>
+                        </form>
+
                         {% endif %}
-                        {% if can_finish and mailing.status != 'completed' %}
+                        {% if perms.users.can_finish and mailing.status != 'completed' %}
                         <form action="{% url 'messaging:finish_mailing' mailing.pk %}"
                               method="post" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-warning" title="Завершить">
-                                <i class="fas fa-stop-circle"></i>
+                                <i class="fas fa-stop-circle">Завершить</i>
                             </button>
                         </form>
                         {% endif %}
